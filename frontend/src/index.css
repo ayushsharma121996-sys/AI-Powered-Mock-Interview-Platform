@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0b0c10] text-gray-100 font-sans antialiased min-h-screen overflow-x-hidden;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(189, 83, 237, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(102, 252, 241, 0.08) 0px, transparent 50%);
+  }
+
+  /* Custom glassmorphism scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(31, 40, 51, 0.3);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(102, 252, 241, 0.2);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 252, 241, 0.5);
+  }
+}
+
+/* Glassmorphism panel styles */
+.glass-panel {
+  background: rgba(31, 40, 51, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-panel-neon-cyan {
+  background: rgba(31, 40, 51, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(102, 252, 241, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2), 0 0 10px rgba(102, 252, 241, 0.05);
+}
+
+.glass-panel-neon-purple {
+  background: rgba(31, 40, 51, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(189, 83, 237, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2), 0 0 10px rgba(189, 83, 237, 0.05);
+}
+
+/* Neon animations */
+@keyframes pulse-cyan {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(102, 252, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(102, 252, 241, 0.8);
+  }
+}
+
+.pulse-neon-cyan {
+  animation: pulse-cyan 2s infinite;
+}
+
+@keyframes pulse-purple {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(189, 83, 237, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(189, 83, 237, 0.8);
+  }
+}
+
+.pulse-neon-purple {
+  animation: pulse-purple 2s infinite;
+}

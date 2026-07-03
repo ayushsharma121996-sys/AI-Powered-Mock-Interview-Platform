@@ -1,0 +1,28 @@
+# Node dependency directories
+**/node_modules/
+node_modules/
+
+# Environment files
+**/.env
+.env
+
+# SQLite local databases
+**/dev.db
+**/dev.db-journal
+dev.db
+dev.db-journal
+
+# Compilation artifacts
+**/dist/
+dist/
+
+# Log files
+*.log
+**/*.log
+
+# IDE files
+.vscode/
+.idea/
+.gemini/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,65 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String      @id @default(uuid())
+  email     String      @unique
+  name      String
+  password  String
+  role      String      @default("candidate") // "candidate" or "recruiter"
+  createdAt DateTime    @default(now())
+  resumes   Resume[]
+  interviews Interview[]
+}
+
+model Resume {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename  String
+  skills    String   // JSON string of array
+  education String   // JSON string or Text
+  projects  String   // JSON string or Text
+  createdAt DateTime @default(now())
+}
+
+model Interview {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String     // Target job role (e.g. SDE, Java Developer)
+  score     Int?       // Final overall score (0-100)
+  status    String     @default("in_progress") // "in_progress", "completed"
+  feedback  String?    // JSON string for overall Strengths, Weaknesses, Categories
+  createdAt DateTime   @default(now())
+  questions Question[]
+}
+
+model Question {
+  id           String    @id @default(uuid())
+  interviewId  String
+  interview    Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  type         String    // "technical", "behavioral", "coding"
+  questionText String
+  sampleAnswer String?   // Optional reference answer or code stub
+  userAnswer   String?   // Candidate response
+  codeLanguage String?   // For coding questions
+  score        Int?      // Score for this specific question (0-100)
+  feedback     String?   // Feedback on this specific question
+  createdAt    DateTime  @default(now())
+}
+
+model InterviewTemplate {
+  id          String   @id @default(uuid())
+  roleName    String   @unique
+  description String
+  skillsList  String   // JSON string of array
+  createdAt   DateTime @default(now())
+}
+
