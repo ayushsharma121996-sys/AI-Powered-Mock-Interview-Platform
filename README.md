@@ -10,6 +10,7 @@ An advanced, full-stack application designed to simulate technical interviews, a
 * **💻 Coding Sandbox**: Integrates the Monaco Editor with support for multiple programming languages, providing a complete test-case validation suite and runtime error parsing.
 * **📄 Resume Analyzer**: Allows candidates to upload PDF resumes, which are parsed and analyzed to tailor mock interview questions specifically to their skillset and experience.
 * **🔑 Secure Authentication**: Full sign-up, sign-in, and password recovery system using JWT. Implements a robust password reset flow powered by Nodemailer (supporting custom SMTP and Ethereal test mail fallbacks).
+
 * **📊 Recruiter Control Panel**: A dashboard for recruiters to view candidates, check detailed performance reports, view scores, and read specific feedback on interview transcripts.
 
 ---
@@ -32,7 +33,7 @@ An advanced, full-stack application designed to simulate technical interviews, a
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 summerpep-project/
@@ -128,8 +129,3 @@ cd AI-Powered-Mock-Interview-Platform
    ```
 4. Open your browser and navigate to `http://localhost:5173`.
 
----
-
-## 🔒 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
