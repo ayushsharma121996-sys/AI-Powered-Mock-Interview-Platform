@@ -9,7 +9,7 @@ export default {
     extend: {
       colors: {
         dark: {
-          bg: '#0b0c10',
+          bg: '#000000',
           panel: '#1f2833',
           border: '#2c3540',
         },

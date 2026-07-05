@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { VoiceRecorder } from '../components/VoiceRecorder';
 import Editor from '@monaco-editor/react';
-import { Sparkles, Terminal, Code, ChevronRight, AlertCircle, Play, HelpCircle, User } from 'lucide-react';
+import { Sparkles, Terminal, Code, ChevronRight, AlertCircle, Play, HelpCircle, User, Volume2, VolumeX } from 'lucide-react';
 
 interface Question {
   id: string;
@@ -42,6 +42,40 @@ export const InterviewSession: React.FC = () => {
   const [consoleOutput, setConsoleOutput] = useState<string>('');
   const [testResults, setTestResults] = useState<any[]>([]);
   const [codeRunning, setCodeRunning] = useState(false);
+
+  // TTS Speech states
+  const [speechEnabled, setSpeechEnabled] = useState(true);
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+
+  const speakQuestion = (text: string) => {
+    window.speechSynthesis.cancel();
+    const cleanText = text.replace(/[*_`#]/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'en-US';
+    utterance.rate = 1.0;
+
+    utterance.onstart = () => setIsAiSpeaking(true);
+    utterance.onend = () => setIsAiSpeaking(false);
+    utterance.onerror = () => setIsAiSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  useEffect(() => {
+    if (!interview) return;
+    const currentQ = interview.questions[currentIdx];
+    if (currentQ) {
+      if (speechEnabled) {
+        speakQuestion(currentQ.questionText);
+      } else {
+        window.speechSynthesis.cancel();
+        setIsAiSpeaking(false);
+      }
+    }
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, [currentIdx, interview, speechEnabled]);
 
   useEffect(() => {
     const fetchInterview = async () => {
@@ -245,9 +279,32 @@ export const InterviewSession: React.FC = () => {
             {/* Left Description Column */}
             <div className="lg:col-span-4 glass-panel p-6 rounded-3xl flex flex-col justify-between text-left space-y-4">
               <div className="space-y-4">
-                <div className="flex items-center space-x-2 text-cyber-light">
-                  <Code className="w-5 h-5" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Coding Round</span>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center space-x-2 text-cyber-light">
+                    <Code className="w-5 h-5" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Coding Round</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setSpeechEnabled(!speechEnabled)}
+                      className={`p-1.5 rounded-lg border transition-all duration-200 ${
+                        speechEnabled
+                          ? 'bg-cyber-purple/10 border-cyber-purple/30 text-cyber-purple'
+                          : 'bg-white/5 border-white/10 text-gray-400'
+                      }`}
+                      title={speechEnabled ? "Mute AI Voice" : "Unmute AI Voice"}
+                    >
+                      {speechEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                    </button>
+                    <button
+                      onClick={() => speakQuestion(currentQ.questionText)}
+                      disabled={!speechEnabled}
+                      className="p-1.5 rounded-lg border border-white/10 bg-white/5 text-[10px] text-gray-300 hover:bg-white/10 disabled:opacity-40"
+                      title="Replay Voice"
+                    >
+                      Replay
+                    </button>
+                  </div>
                 </div>
                 <h3 className="text-lg font-bold text-white">Problem Prompt</h3>
                 <p className="text-sm text-gray-300 whitespace-pre-line leading-relaxed">
@@ -336,17 +393,46 @@ export const InterviewSession: React.FC = () => {
           <div className="lg:col-span-12 glass-panel p-8 rounded-3xl flex flex-col md:flex-row gap-8 items-stretch text-left">
             {/* AI Avatar Pane */}
             <div className="md:w-1/3 bg-[#141a24]/50 border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center space-y-6">
-              <div className={`w-32 h-32 rounded-full bg-gradient-to-tr from-cyber-purple via-indigo-600 to-cyber-light flex items-center justify-center shadow-lg relative ${
-                isRecordingActive ? 'scale-105 duration-300 pulse-neon-cyan' : 'pulse-neon-purple'
+              <div className={`w-32 h-32 rounded-full bg-gradient-to-tr from-cyber-purple via-indigo-600 to-cyber-light flex items-center justify-center shadow-lg relative transition-all duration-300 ${
+                isRecordingActive 
+                  ? 'scale-105 ring-4 ring-cyber-light/30 shadow-neon-cyan animate-none' 
+                  : isAiSpeaking 
+                  ? 'scale-105 ring-4 ring-cyber-purple/30 shadow-neon-purple animate-pulse' 
+                  : 'scale-100 opacity-90'
               }`}>
                 <User className="w-16 h-16 text-white" />
                 {isRecordingActive && (
                   <span className="absolute animate-ping inline-flex h-full w-full rounded-full bg-cyber-light opacity-30"></span>
                 )}
+                {isAiSpeaking && (
+                  <span className="absolute animate-ping inline-flex h-full w-full rounded-full bg-cyber-purple opacity-30"></span>
+                )}
               </div>
-              <div className="text-center">
+              <div className="text-center flex flex-col items-center">
                 <span className="text-xs font-bold text-cyber-light uppercase tracking-wider block">AI Interviewer</span>
-                <span className="text-[10px] text-gray-500 mt-1 block">Active Speech Assessment Engaged</span>
+                <span className="text-[10px] text-gray-500 mt-1 block">
+                  {isAiSpeaking ? 'Speaking Question...' : isRecordingActive ? 'Listening to Response...' : 'Active Speech Assessment Engaged'}
+                </span>
+                <div className="flex items-center space-x-2.5 mt-4">
+                  <button
+                    onClick={() => setSpeechEnabled(!speechEnabled)}
+                    className={`p-2 rounded-xl border transition-all duration-200 ${
+                      speechEnabled
+                        ? 'bg-cyber-purple/10 border-cyber-purple/30 text-cyber-purple hover:bg-cyber-purple/20'
+                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                    }`}
+                    title={speechEnabled ? "Mute AI Voice" : "Unmute AI Voice"}
+                  >
+                    {speechEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={() => speakQuestion(currentQ.questionText)}
+                    disabled={!speechEnabled}
+                    className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-[11px] text-gray-300 hover:bg-white/10 hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Replay
+                  </button>
+                </div>
               </div>
             </div>
 

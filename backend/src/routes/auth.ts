@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../db';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
+import { sendResetEmail } from '../utils/mailer';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_interviewai_jwt_key_987654321';
@@ -134,14 +135,14 @@ router.post('/forgot-password', async (req, res) => {
     // Generate a temporary JWT reset token
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '15m' });
 
-    // Print link directly to backend console
-    console.log('\n======================================================');
-    console.log(`🔑 [PASSWORD RESET MOCK REQUEST]`);
-    console.log(`User: ${user.name} (${user.email})`);
-    console.log(`Link: http://localhost:5173/reset-password?token=${token}`);
-    console.log('======================================================\n');
+    // Send reset email via helper
+    const mailResult = await sendResetEmail(user.email, user.name, token);
 
-    return res.json({ message: 'If the email exists in our records, a recovery link will be sent shortly.' });
+    return res.json({ 
+      message: 'If the email exists in our records, a recovery link will be sent shortly.',
+      testMessageUrl: mailResult.testMessageUrl || null,
+      consoleOnly: mailResult.consoleOnly || false
+    });
   } catch (error) {
     console.error('Forgot password error:', error);
     return res.status(500).json({ error: 'Internal server error.' });
