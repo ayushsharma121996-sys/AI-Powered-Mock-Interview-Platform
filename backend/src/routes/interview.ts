@@ -87,14 +87,25 @@ router.post('/start', authMiddleware, async (req: AuthenticatedRequest, res: Res
       role: interview.role,
       status: interview.status,
       // Map questions to exclude the sampleAnswer from frontend payload for security
-      questions: questionRecords.map((q) => ({
-        id: q.id,
-        type: q.type,
-        questionText: q.questionText,
-        userAnswer: q.userAnswer,
-        score: q.score,
-        feedback: q.feedback,
-      })),
+      questions: questionRecords.map((q) => {
+        let options: string[] = [];
+        if (q.type === 'mcq' && q.sampleAnswer) {
+          try {
+            options = JSON.parse(q.sampleAnswer).options || [];
+          } catch (e) {
+            options = [];
+          }
+        }
+        return {
+          id: q.id,
+          type: q.type,
+          questionText: q.questionText,
+          userAnswer: q.userAnswer,
+          score: q.score,
+          feedback: q.feedback,
+          options,
+        };
+      }),
     });
   } catch (error) {
     console.error('Start Interview Error:', error);
@@ -132,16 +143,27 @@ router.get('/:id', authMiddleware, async (req: AuthenticatedRequest, res: Respon
       status: interview.status,
       feedback: interview.feedback ? JSON.parse(interview.feedback) : null,
       createdAt: interview.createdAt,
-      questions: interview.questions.map((q) => ({
-        id: q.id,
-        type: q.type,
-        questionText: q.questionText,
-        userAnswer: q.userAnswer,
-        score: q.score,
-        feedback: q.feedback,
-        // Include sampleAnswer ONLY if interview is completed, otherwise hide
-        sampleAnswer: interview.status === 'completed' ? q.sampleAnswer : null,
-      })),
+      questions: interview.questions.map((q) => {
+        let options: string[] = [];
+        if (q.type === 'mcq' && q.sampleAnswer) {
+          try {
+            options = JSON.parse(q.sampleAnswer).options || [];
+          } catch (e) {
+            options = [];
+          }
+        }
+        return {
+          id: q.id,
+          type: q.type,
+          questionText: q.questionText,
+          userAnswer: q.userAnswer,
+          score: q.score,
+          feedback: q.feedback,
+          options,
+          // Include sampleAnswer ONLY if interview is completed, otherwise hide
+          sampleAnswer: interview.status === 'completed' ? q.sampleAnswer : null,
+        };
+      }),
     });
   } catch (error) {
     console.error('Get Interview Error:', error);
@@ -184,12 +206,41 @@ router.post('/:id/submit-answer', authMiddleware, async (req: AuthenticatedReque
       return res.status(404).json({ error: 'Question not found in this interview session.' });
     }
 
-    // Run AI Evaluation on candidate's answer
-    const evaluation = await evaluateAnswer(
-      question.questionText,
-      question.sampleAnswer,
-      userAnswer
-    );
+    let evaluation: { score: number; feedback: string };
+
+    if (question.type === 'mcq') {
+      let isCorrect = false;
+      let correctOptionLabel = '';
+      if (question.sampleAnswer) {
+        try {
+          const parsed = JSON.parse(question.sampleAnswer);
+          const correctKey = (parsed.correctAnswer || '').trim().toLowerCase();
+          const userKey = (userAnswer || '').trim().toLowerCase();
+          isCorrect = correctKey === userKey;
+
+          const options = parsed.options || [];
+          const matchingOption = options.find((opt: string) =>
+            opt.trim().toLowerCase().startsWith(correctKey)
+          );
+          correctOptionLabel = matchingOption || parsed.correctAnswer.toUpperCase();
+        } catch (e) {
+          // fallback
+        }
+      }
+
+      evaluation = {
+        score: isCorrect ? 100 : 0,
+        feedback: isCorrect
+          ? 'Correct answer! Excellent job.'
+          : `Incorrect. The correct option was ${correctOptionLabel}.`
+      };
+    } else {
+      evaluation = await evaluateAnswer(
+        question.questionText,
+        question.sampleAnswer,
+        userAnswer
+      );
+    }
 
     // Update Question Record
     const updatedQuestion = await prisma.question.update({

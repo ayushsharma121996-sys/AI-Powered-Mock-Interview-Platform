@@ -78,27 +78,33 @@ export async function generateQuestions(
       generationConfig: { responseMimeType: 'application/json' },
     });
 
-    const isTech = type === 'technical';
     const prompt = `
       You are an elite interviewer for a ${role} position.
-      Generate 5 personalized interview questions for a candidate with these skills: ${skills.join(', ')}.
+      Generate exactly 8 personalized interview questions for a candidate with these skills: ${skills.join(', ')}.
       
       Interview Category: ${type.toUpperCase()}
 
       Rules:
-      1. If category is TECHNICAL, generate 4 technical concept questions and 1 coding challenge question (set type of the coding question to "coding").
-         - For the coding question, provide a coding starter code snippet in Javascript/Typescript or Python inside the "sampleAnswer" property, along with brief instructions.
-         - For other technical questions, provide a 1-2 sentence reference solution in "sampleAnswer".
-      2. If category is HR, generate 5 behavioral or situational questions (set type to "behavioral").
-         - "sampleAnswer" can be a short list of bullet points showing what a strong answer should cover.
-      3. Keep the questions engaging, professional, and matching the role of ${role}.
+      1. Generate EXACTLY 8 questions in total.
+      2. The first 5 questions MUST be Multiple Choice Questions (set type to "mcq").
+         - For each MCQ, provide 4 options in the "sampleAnswer" field as a stringified JSON object matching this schema:
+           {"options": ["A) ...", "B) ...", "C) ...", "D) ..."], "correctAnswer": "a" | "b" | "c" | "d"}
+           Note: The "correctAnswer" property MUST be a single lowercase letter: "a", "b", "c", or "d".
+      3. If category is TECHNICAL:
+         - Generate 5 MCQs (type "mcq") about technical concepts.
+         - Generate 2 written technical explanation questions (set type to "technical"). For these, provide a 1-2 sentence reference solution in "sampleAnswer".
+         - Generate 1 coding challenge question (set type to "coding"). For this, provide a starter JavaScript coding stub in "sampleAnswer" (e.g. "// Write a function ... function solve() {}").
+      4. If category is HR:
+         - Generate 5 MCQs (type "mcq") about situational judgment or HR scenarios.
+         - Generate 3 written behavioral questions (set type to "behavioral"). For these, provide a 1-2 sentence reference answer in "sampleAnswer".
+      5. Keep all questions highly professional and relevant to the role: ${role}.
 
       Return the response strictly as a JSON array of objects matching this schema:
       [
         {
-          "questionText": "Question text here?",
-          "type": "technical" | "coding" | "behavioral",
-          "sampleAnswer": "Reference answer or starter code snippet or null"
+          "questionText": "Question text?",
+          "type": "mcq" | "technical" | "coding" | "behavioral",
+          "sampleAnswer": "Stringified JSON for MCQ, or reference answer/code stub for others"
         }
       ]
     `;
@@ -270,63 +276,176 @@ function getMockResumeParsing(text: string) {
 function getMockQuestions(skills: string[], role: string, type: 'technical' | 'hr') {
   if (type === 'hr') {
     return [
+      // 5 MCQs
       {
-        questionText: 'Tell me about yourself and your journey as a developer.',
-        type: 'behavioral',
-        sampleAnswer: 'Strong candidates will explain their background, passions, and fit for the role.'
+        questionText: 'If a project requirement is ambiguous, what is the best first step?',
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) Ask the client or product manager for immediate clarification',
+            'B) Proceed with your own assumptions to save time',
+            'C) Wait until the next sprint planning to address it',
+            'D) Delegate the task to a teammate'
+          ],
+          correctAnswer: 'a'
+        })
       },
       {
-        questionText: 'Can you describe a challenging technical project you worked on and how you overcame the obstacles?',
+        questionText: 'How do you handle a situation where you cannot meet a critical deadline?',
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) Hide it and hope no one notices',
+            'B) Communicate early with stakeholders, explain the bottleneck, and offer alternative plans',
+            'C) Rush the work and compromise on code quality',
+            'D) Blame other team members for the delay'
+          ],
+          correctAnswer: 'b'
+        })
+      },
+      {
+        questionText: 'Which style of communication is most effective in a cross-functional agile team?',
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) Technical jargon heavy to look expert',
+            'B) Rare and minimal communication to avoid noise',
+            'C) Transparent, frequent, and empathetic communication tailored to the audience',
+            'D) Communication only through formal emails'
+          ],
+          correctAnswer: 'c'
+        })
+      },
+      {
+        questionText: 'What is the main goal of a sprint retrospective meeting?',
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) Pointing fingers at people who made mistakes',
+            'B) Reflecting on the sprint to identify improvements for the next sprint',
+            'C) Demoing the work done to stakeholders',
+            'D) Planning tasks for the next release'
+          ],
+          correctAnswer: 'b'
+        })
+      },
+      {
+        questionText: 'How do you prioritize multiple tasks with high urgency?',
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) Work on the easiest tasks first',
+            'B) Work on whichever task is requested by the loudest stakeholder',
+            'C) Assess impact vs effort, consult the team lead, and tackle tasks sequentially',
+            'D) Multitask on all of them simultaneously'
+          ],
+          correctAnswer: 'c'
+        })
+      },
+      // 3 Written
+      {
+        questionText: 'Tell me about yourself and your journey as a professional.',
+        type: 'behavioral',
+        sampleAnswer: 'Strong candidates will explain their background, achievements, and fit for the role.'
+      },
+      {
+        questionText: 'Can you describe a challenging professional situation and how you solved it?',
         type: 'behavioral',
         sampleAnswer: 'Looking for a structured STAR response: Situation, Task, Action, Result.'
       },
       {
-        questionText: 'How do you handle conflict or differing opinions within a software development team?',
+        questionText: 'How do you handle constructive criticism from your peers or managers?',
         type: 'behavioral',
-        sampleAnswer: 'Evaluate communication, empathy, and ability to find consensus.'
-      },
-      {
-        questionText: 'Why do you want to join our company, and what do you hope to achieve here?',
-        type: 'behavioral',
-        sampleAnswer: 'Assess motivation, alignment with company values, and career goals.'
-      },
-      {
-        questionText: 'What are your greatest professional strengths and weaknesses, and how are you working on your weaknesses?',
-        type: 'behavioral',
-        sampleAnswer: 'Check for self-awareness and active steps towards self-improvement.'
+        sampleAnswer: 'Assess receptiveness, growth mindset, and constructive implementation of feedback.'
       }
     ];
   } else {
     // Technical questions customized to skills/role
-    const questions = [
+    return [
+      // 5 MCQs
       {
-        questionText: `What are the core design patterns you utilize when developing in ${role}?`,
-        type: 'technical',
-        sampleAnswer: 'Common patterns include MVC, Singleton, Factory, and Repository patterns.'
+        questionText: `Which of the following is a key feature of the virtual DOM in React?`,
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) It renders the entire HTML document on every user click',
+            'B) It performs in-memory updates and batches minimal reconciliations to the real DOM',
+            'C) It acts as a direct interface to the browser database',
+            'D) It runs backend database queries'
+          ],
+          correctAnswer: 'b'
+        })
       },
       {
-        questionText: `Explain the differences between synchronous and asynchronous processes in your development stack.`,
-        type: 'technical',
-        sampleAnswer: 'Synchronous blocks execution, while asynchronous processes run in parallel or defer execution via event loops.'
+        questionText: `In CSS flexbox, which property defines the alignment along the main axis?`,
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) align-items',
+            'B) align-content',
+            'C) justify-content',
+            'D) flex-direction'
+          ],
+          correctAnswer: 'c'
+        })
       },
       {
-        questionText: `How do you optimize performance and manage database transactions in a project?`,
-        type: 'technical',
-        sampleAnswer: 'Using indices, query caching, connection pooling, and transactional rollbacks.'
+        questionText: `What is the primary purpose of indexing in database management systems?`,
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) To compress the database size',
+            'B) To speed up retrieval of data records at the cost of additional write overhead',
+            'C) To secure the data from unauthorized access',
+            'D) To ensure transactions are ACID compliant'
+          ],
+          correctAnswer: 'b'
+        })
       },
       {
-        questionText: `How do you ensure secure data flow and protect against vulnerabilities like SQL injection or CSRF?`,
-        type: 'technical',
-        sampleAnswer: 'Input sanitization, parameterized queries, CSRF tokens, and secure JWT verification.'
+        questionText: `What does the "I" stand for in SOLID principles of software design?`,
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) Inheritance Principle',
+            'B) Integration Principle',
+            'C) Interface Segregation Principle',
+            'D) Iteration Principle'
+          ],
+          correctAnswer: 'c'
+        })
       },
       {
-        // 5th question is always coding
-        questionText: 'Write a function `twoSum(nums, target)` that returns indices of the two numbers such that they add up to `target`. Assume each input has exactly one solution.',
+        questionText: `Which of the following describes the time complexity of searching in a balanced Binary Search Tree?`,
+        type: 'mcq',
+        sampleAnswer: JSON.stringify({
+          options: [
+            'A) O(1)',
+            'B) O(N)',
+            'C) O(N log N)',
+            'D) O(log N)'
+          ],
+          correctAnswer: 'd'
+        })
+      },
+      // 2 Written Technical
+      {
+        questionText: `What are the core architectural design principles you utilize when developing in ${role}?`,
+        type: 'technical',
+        sampleAnswer: 'Common patterns include clean architecture, separation of concerns, MVC, and microservices.'
+      },
+      {
+        questionText: `Explain the differences between synchronous and asynchronous operations in modern software environments.`,
+        type: 'technical',
+        sampleAnswer: 'Synchronous blocks execution, while asynchronous processes defer execution or run in parallel using threads or event loops.'
+      },
+      // 1 Coding
+      {
+        questionText: 'Write a JavaScript function `twoSum(nums, target)` that returns indices of the two numbers such that they add up to `target`. Assume each input has exactly one solution.',
         type: 'coding',
         sampleAnswer: `// Starter Code\nfunction twoSum(nums, target) {\n  // Write your code here\n  return [];\n}\n\n// Examples:\n// twoSum([2, 7, 11, 15], 9) -> [0, 1]`
       }
     ];
-    return questions;
   }
 }
 
