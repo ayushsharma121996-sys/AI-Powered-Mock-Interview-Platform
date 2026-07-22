@@ -22,7 +22,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRole?: 'candi
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0b0c10]">
+      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-[#0b0c10]">
         <div className="w-10 h-10 border-4 border-cyber-light border-t-transparent rounded-full animate-spin shadow-neon-cyan" />
       </div>
     );
@@ -54,6 +54,7 @@ const AppContent: React.FC = () => {
   return (
     <Router>
       <div className="min-h-screen flex flex-col justify-between">
+
         {/* Render Navbar only if user is logged in */}
         {user && <Navbar />}
 

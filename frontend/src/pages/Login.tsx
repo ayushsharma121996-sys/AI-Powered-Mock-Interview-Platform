@@ -39,6 +39,17 @@ export const Login: React.FC = () => {
 
   return (
     <div className="w-full max-w-md mx-auto my-12">
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="fixed top-0 left-0 w-full h-full object-cover -z-10 pointer-events-none"
+      >
+        <source src="/video/ocean.mp4" type="video/mp4" />
+      </video>
+
       <div className="glass-panel-neon-purple p-8 rounded-3xl relative overflow-hidden">
         {/* Glow effect */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-cyber-purple/20 rounded-full blur-3xl pointer-events-none" />

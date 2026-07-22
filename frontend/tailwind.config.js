@@ -12,7 +12,12 @@ export default {
           bg: '#000000',
           panel: '#1f2833',
           border: '#2c3540',
-        },
+        },/*
+        dark: {
+          bg: '#ffffff',
+          panel: '#f8fafc',
+          border: '#e5e7eb',
+        },*/
         cyber: {
           light: '#66fcf1',
           teal: '#45f3ff',

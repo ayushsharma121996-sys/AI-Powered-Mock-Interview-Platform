@@ -7,11 +7,12 @@ import { Sparkles, Terminal, Code, ChevronRight, AlertCircle, Play, HelpCircle, 
 
 interface Question {
   id: string;
-  type: string; // 'technical' | 'behavioral' | 'coding'
+  type: string; // 'technical' | 'behavioral' | 'coding' | 'mcq'
   questionText: string;
   userAnswer: string | null;
   score: number | null;
   feedback: string | null;
+  options?: string[];
 }
 
 interface Interview {
@@ -34,6 +35,7 @@ export const InterviewSession: React.FC = () => {
 
   // Input states for standard questions
   const [textAnswer, setTextAnswer] = useState('');
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isRecordingActive, setIsRecordingActive] = useState(false);
 
   // Coding states
@@ -109,6 +111,9 @@ export const InterviewSession: React.FC = () => {
       setCode(currentQ.userAnswer || `// JavaScript Solution\nfunction twoSum(nums, target) {\n  // Write your code here\n  return [];\n}`);
       setConsoleOutput('');
       setTestResults([]);
+    } else if (currentQ && currentQ.type === 'mcq') {
+      setSelectedOption(currentQ.userAnswer || null);
+      setTextAnswer(currentQ.userAnswer || '');
     } else {
       setTextAnswer(currentQ?.userAnswer || '');
     }
@@ -441,7 +446,9 @@ export const InterviewSession: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 text-cyber-light">
                   <Sparkles className="w-4 h-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Active Question</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">
+                    {currentQ.type === 'mcq' ? 'Multiple Choice Question' : 'Active Question'}
+                  </span>
                 </div>
                 <h2 className="text-xl md:text-2xl font-bold text-white leading-relaxed">
                   {currentQ.questionText}
@@ -449,23 +456,52 @@ export const InterviewSession: React.FC = () => {
               </div>
 
               {/* Answer Input Section */}
-              <div className="space-y-4">
-                <textarea
-                  rows={4}
-                  value={textAnswer}
-                  onChange={(e) => setTextAnswer(e.target.value)}
-                  placeholder="Answer by voice below or draft your response directly here..."
-                  className="w-full bg-[#141a24] border border-white/5 focus:border-cyber-purple rounded-2xl p-4 text-sm text-gray-100 placeholder-gray-500 focus:outline-none transition-colors duration-200"
-                />
-
-                {/* Voice Input component */}
-                <div className="flex justify-center py-2 border-t border-white/5 pt-4">
-                  <VoiceRecorder
-                    onTranscription={handleTranscription}
-                    onStateChange={(rec) => setIsRecordingActive(rec)}
-                  />
+              {currentQ.type === 'mcq' ? (
+                <div className="space-y-4 w-full">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">Select One Option</span>
+                  <div className="grid grid-cols-1 gap-3">
+                    {currentQ.options?.map((option: string) => {
+                      const optionKey = option.trim().charAt(0).toLowerCase();
+                      const isSelected = selectedOption === optionKey;
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            setSelectedOption(optionKey);
+                            setTextAnswer(optionKey);
+                          }}
+                          className={`p-4 rounded-xl border text-left text-sm font-semibold transition-all duration-200 ${
+                            isSelected
+                              ? 'bg-cyber-purple/10 border-cyber-purple text-cyber-purple shadow-neon-purple'
+                              : 'bg-[#141a24] border-white/5 text-gray-300 hover:bg-[#1f2833]/50'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-4">
+                  <textarea
+                    rows={4}
+                    value={textAnswer}
+                    onChange={(e) => setTextAnswer(e.target.value)}
+                    placeholder="Answer by voice below or draft your response directly here..."
+                    className="w-full bg-[#141a24] border border-white/5 focus:border-cyber-purple rounded-2xl p-4 text-sm text-gray-100 placeholder-gray-500 focus:outline-none transition-colors duration-200"
+                  />
+
+                  {/* Voice Input component */}
+                  <div className="flex justify-center py-2 border-t border-white/5 pt-4">
+                    <VoiceRecorder
+                      onTranscription={handleTranscription}
+                      onStateChange={(rec) => setIsRecordingActive(rec)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

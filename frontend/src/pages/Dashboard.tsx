@@ -24,6 +24,26 @@ export const Dashboard: React.FC = () => {
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasResume, setHasResume] = useState(false);
+  const [highlightChart, setHighlightChart] = useState(false);
+  const [highlightSkills, setHighlightSkills] = useState(false);
+
+  const scrollToChart = () => {
+    const el = document.getElementById('performance-chart');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      setHighlightChart(true);
+      setTimeout(() => setHighlightChart(false), 2000);
+    }
+  };
+
+  const scrollToSkills = () => {
+    const el = document.getElementById('skill-insights');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      setHighlightSkills(true);
+      setTimeout(() => setHighlightSkills(false), 2000);
+    }
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -109,7 +129,10 @@ export const Dashboard: React.FC = () => {
 
       {/* Score and Analytics Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-panel p-6 rounded-2xl flex items-center space-x-4">
+        <div 
+          onClick={() => navigate(hasResume ? '/role-select' : '/upload-resume')}
+          className="glass-panel p-6 rounded-2xl flex items-center space-x-4 cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg transition-all duration-200 border-b-2 border-b-cyber-light/40"
+        >
           <div className="p-4 bg-cyber-light/10 text-cyber-light rounded-xl">
             <CheckCircle className="w-6 h-6" />
           </div>
@@ -119,7 +142,10 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl flex items-center space-x-4">
+        <div 
+          onClick={scrollToChart}
+          className="glass-panel p-6 rounded-2xl flex items-center space-x-4 cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg transition-all duration-200 border-b-2 border-b-cyber-purple/40"
+        >
           <div className="p-4 bg-cyber-purple/10 text-cyber-purple rounded-xl">
             <TrendingUp className="w-6 h-6" />
           </div>
@@ -131,7 +157,10 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl flex items-center space-x-4">
+        <div 
+          onClick={scrollToSkills}
+          className="glass-panel p-6 rounded-2xl flex items-center space-x-4 cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg transition-all duration-200 border-b-2 border-b-emerald-500/40"
+        >
           <div className="p-4 bg-emerald-500/10 text-emerald-400 rounded-xl">
             <Sparkles className="w-6 h-6" />
           </div>
@@ -143,7 +172,10 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-panel p-6 rounded-2xl flex items-center space-x-4">
+        <div 
+          onClick={scrollToSkills}
+          className="glass-panel p-6 rounded-2xl flex items-center space-x-4 cursor-pointer hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg transition-all duration-200 border-b-2 border-b-red-500/40"
+        >
           <div className="p-4 bg-red-500/10 text-red-400 rounded-xl">
             <BookOpen className="w-6 h-6" />
           </div>
@@ -156,10 +188,14 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Stats Chart & history */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* SVG Performance Chart */}
-        <div className="glass-panel p-6 rounded-3xl lg:col-span-2 space-y-6">
+        <div 
+          id="performance-chart" 
+          className={`glass-panel p-6 rounded-3xl lg:col-span-2 space-y-6 transition-all duration-500 ${
+            highlightChart ? 'ring-2 ring-cyber-light shadow-neon-cyan scale-[1.01]' : ''
+          }`}
+        >
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-cyber-light" />
@@ -207,7 +243,12 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Strong/Weak Skills */}
-        <div className="glass-panel p-6 rounded-3xl space-y-6">
+        <div 
+          id="skill-insights" 
+          className={`glass-panel p-6 rounded-3xl space-y-6 transition-all duration-500 ${
+            highlightSkills ? 'ring-2 ring-cyber-purple shadow-neon-purple scale-[1.01]' : ''
+          }`}
+        >
           <h3 className="text-lg font-bold text-white">Skill Insights</h3>
 
           <div className="space-y-4">

@@ -12,12 +12,18 @@ export const RoleSelect: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const POPULAR_ROLES = [
-    'Software Development Engineer (SDE)',
-    'Java Developer',
-    'React Native Developer',
-    'Data Analyst',
-    'Full Stack Engineer',
-    'Product Manager'
+    'General HR & Leadership',
+    'Project Manager',
+    'Customer Success',
+    'HR Specialist',
+    'Sales Executive'
+  ];
+
+  const TECH_STACKS = [
+    { name: 'Frontend', role: 'Frontend Developer', desc: 'React, TypeScript, TailwindCSS' },
+    { name: 'Backend', role: 'Backend Developer', desc: 'NodeJS, ExpressJS, SQL, Prisma' },
+    { name: 'DSA', role: 'Software Engineer (DSA)', desc: 'Data Structures and Algorithms' },
+    { name: 'Data Science', role: 'Data Scientist', desc: 'Python, Machine Learning, Data Analytics' },
   ];
 
   const handleStart = async (e: React.FormEvent) => {
@@ -64,6 +70,43 @@ export const RoleSelect: React.FC = () => {
         )}
 
         <form onSubmit={handleStart} className="space-y-6">
+          {/* Interview Type Selector */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Interview Focus</label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setType('technical');
+                  setRole('');
+                }}
+                className={`flex flex-col items-center justify-center p-5 rounded-2xl border text-center transition-all duration-200 ${
+                  type === 'technical'
+                    ? 'bg-cyber-light/10 border-cyber-light text-cyber-light shadow-neon-cyan'
+                    : 'bg-[#141a24] border-white/5 text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                <span className="text-sm font-bold">Technical Interview</span>
+                <span className="text-[10px] text-gray-500 mt-1">Core Tech, Architectures & Coding Round</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setType('hr');
+                  setRole('');
+                }}
+                className={`flex flex-col items-center justify-center p-5 rounded-2xl border text-center transition-all duration-200 ${
+                  type === 'hr'
+                    ? 'bg-cyber-purple/10 border-cyber-purple text-cyber-purple shadow-neon-purple'
+                    : 'bg-[#141a24] border-white/5 text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                <span className="text-sm font-bold">HR/Behavioral</span>
+                <span className="text-[10px] text-gray-500 mt-1">STAR methodology, leadership, weaknesses</span>
+              </button>
+            </div>
+          </div>
+
           {/* Target Role Input */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Target Job Role</label>
@@ -81,54 +124,46 @@ export const RoleSelect: React.FC = () => {
 
             {/* Quick selectors */}
             <div className="pt-2">
-              <span className="text-[10px] text-gray-500 font-semibold block mb-2 uppercase">Popular Roles</span>
-              <div className="flex flex-wrap gap-1.5">
-                {POPULAR_ROLES.map((r, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setRole(r)}
-                    className={`text-[11px] px-3 py-1.5 rounded-lg border font-medium transition-all duration-150 ${
-                      role === r
-                        ? 'bg-cyber-light/10 border-cyber-light text-cyber-light shadow-neon-cyan'
-                        : 'bg-[#141a24] border-white/5 text-gray-400 hover:text-gray-300'
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
+              <span className="text-[10px] text-gray-500 font-semibold block mb-2 uppercase">
+                {type === 'technical' ? 'Select Tech Stack' : 'Popular Focus Areas'}
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {type === 'technical' ? (
+                  TECH_STACKS.map((t, idx) => {
+                    const isSelected = role === t.role;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setRole(t.role)}
+                        className={`flex flex-col items-start p-3.5 rounded-xl border text-left transition-all duration-150 ${
+                          isSelected
+                            ? 'bg-cyber-light/10 border-cyber-light text-cyber-light shadow-neon-cyan'
+                            : 'bg-[#141a24] border-white/5 text-gray-400 hover:bg-[#1f2833]/50'
+                        }`}
+                      >
+                        <span className="text-xs font-bold text-white">{t.name}</span>
+                        <span className="text-[10px] text-gray-400 mt-0.5">{t.desc}</span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  POPULAR_ROLES.map((r, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setRole(r)}
+                      className={`text-[11px] text-left p-3.5 rounded-xl border font-medium transition-all duration-150 ${
+                        role === r
+                          ? 'bg-cyber-purple/10 border-cyber-purple text-cyber-purple shadow-neon-purple'
+                          : 'bg-[#141a24] border-white/5 text-gray-400 hover:bg-[#1f2833]/50'
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))
+                )}
               </div>
-            </div>
-          </div>
-
-          {/* Interview Type Selector */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Interview Focus</label>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setType('technical')}
-                className={`flex flex-col items-center justify-center p-5 rounded-2xl border text-center transition-all duration-200 ${
-                  type === 'technical'
-                    ? 'bg-cyber-light/10 border-cyber-light text-cyber-light shadow-neon-cyan'
-                    : 'bg-[#141a24] border-white/5 text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                <span className="text-sm font-bold">Technical Interview</span>
-                <span className="text-[10px] text-gray-500 mt-1">Core Tech, Architectures & Coding Round</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setType('hr')}
-                className={`flex flex-col items-center justify-center p-5 rounded-2xl border text-center transition-all duration-200 ${
-                  type === 'hr'
-                    ? 'bg-cyber-purple/10 border-cyber-purple text-cyber-purple shadow-neon-purple'
-                    : 'bg-[#141a24] border-white/5 text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                <span className="text-sm font-bold">HR/Behavioral</span>
-                <span className="text-[10px] text-gray-500 mt-1">STAR methodology, leadership, weaknesses</span>
-              </button>
             </div>
           </div>
 
